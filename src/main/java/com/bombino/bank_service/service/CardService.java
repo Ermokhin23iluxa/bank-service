@@ -1,5 +1,6 @@
 package com.bombino.bank_service.service;
 
+import com.bombino.bank_service.exception.CardNotFoundException;
 import com.bombino.bank_service.model.dto.CardDto;
 import com.bombino.bank_service.model.entity.Card;
 import com.bombino.bank_service.model.mapper.CardMapper;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,5 +33,22 @@ public class CardService {
         cardRepository.save(newCard);
 
         return mapper.toDto(newCard);
+    }
+
+    public void deleteCard(Long id) {
+        Card card = cardRepository.findById(id).orElseThrow(
+                ()->new CardNotFoundException("Карты с id: {" +id+"} не существует" ));
+        cardRepository.delete(card);
+    }
+
+    public CardDto getCardById(Long id) {
+        Card card = cardRepository.findById(id).orElseThrow(
+                ()->new CardNotFoundException("Карты с id: {" +id+"} не существует" ));
+        return mapper.toDto(card);
+    }
+
+    public List<CardDto> getAllCards() {
+        List<Card> cards = cardRepository.findAll();
+        return cards.stream().map(mapper::toDto).toList();
     }
 }
