@@ -16,8 +16,8 @@ import java.util.concurrent.TimeoutException;
 @RequiredArgsConstructor
 @Component
 @Slf4j
-public class KafkaMessageSender implements MessageSender{
-    private final KafkaTemplate<String,String> kafkaTemplate;
+public class KafkaMessageSender implements MessageSender {
+    private final KafkaTemplate<String, String> kafkaTemplate;
     private static final int MAX_ATTEMPTS = 5;
 
     @Retryable(
@@ -28,11 +28,11 @@ public class KafkaMessageSender implements MessageSender{
     @Override
     public void send(String topic, String payload) throws Exception {
         try {
-            kafkaTemplate.send(topic,payload).get(5,TimeUnit.SECONDS);
+            kafkaTemplate.send(topic, payload).get(5, TimeUnit.SECONDS);
             log.info("Кафка успешно отправила в топик={} payloadLen={}", topic, payload == null ? 0 : payload.length());
-        } catch (Exception exception){
-            log.error("Ошибка отправки в топик Kafka={}",topic,exception);
-            throw new RuntimeException("Ошибка отправки сообщения в Kafka",exception);
+        } catch (Exception exception) {
+            log.error("Ошибка отправки в топик Kafka={}", topic, exception);
+            throw new RuntimeException("Ошибка отправки сообщения в Kafka", exception);
         }
     }
 
@@ -42,8 +42,8 @@ public class KafkaMessageSender implements MessageSender{
     }
 
     @Recover
-    public void sendFallback(Exception ex,String topic,String payload){
-        log.error("Все {} попыток отправки в топик {} провалились",MAX_ATTEMPTS,topic,ex);
+    public void sendFallback(Exception ex, String topic, String payload) {
+        log.error("Все {} попыток отправки в топик {} провалились", MAX_ATTEMPTS, topic, ex);
 
     }
 }

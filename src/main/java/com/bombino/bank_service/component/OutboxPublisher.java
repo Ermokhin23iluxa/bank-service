@@ -18,14 +18,14 @@ public class OutboxPublisher {
     private final MessageSender messageSender;
 
     @Scheduled(fixedDelayString = "${outbox.poll.ms:5000}") // проверка неотправленных событий каждые 5 сек
-    public void publishPending(){
+    public void publishPending() {
         //поиск не обработанных(неотправленных) событий
         List<OutboxEvent> pending = outboxEventRepository.findTop100ByProcessedFalseOrderByCreatedAtAsc();
-        log.info("Найдено {} ожидающих outbox событий",pending.size());
+        log.info("Найдено {} ожидающих outbox событий", pending.size());
 
-        for(OutboxEvent ev: pending){
-            try{
-                messageSender.send(ev.getEventType(),ev.getPayload());
+        for (OutboxEvent ev : pending) {
+            try {
+                messageSender.send(ev.getEventType(), ev.getPayload());
                 int updated = outboxEventRepository.markProcessed(ev.getId()); // идемпотентность
                 if (updated > 0) {
                     log.info("Отметил outbox {} как обработанный", ev.getId());
@@ -33,8 +33,8 @@ public class OutboxPublisher {
                     log.info("Outbox {} уже был обработан другим воркером", ev.getId());
                 }
 
-            }catch (Exception exception){
-                log.warn("Ошибка публикации outbox с id={}, попробуйте позже",ev.getId(),exception);
+            } catch (Exception exception) {
+                log.warn("Ошибка публикации outbox с id={}, попробуйте позже", ev.getId(), exception);
             }
         }
     }

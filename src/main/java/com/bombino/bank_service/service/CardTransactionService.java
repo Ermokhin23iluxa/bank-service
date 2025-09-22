@@ -29,14 +29,14 @@ public class CardTransactionService {
     private final OutboxEventRepository outboxEventRepository;
 
     @Transactional
-    public Transaction topUp(UUID cardId, BigDecimal amount,String idempotencyKey){
+    public Transaction topUp(UUID cardId, BigDecimal amount, String idempotencyKey) {
         log.info("Start method topUp in CardTransactionService");
 
-        if(amount.compareTo(BigDecimal.ZERO)<=0) throw new IllegalArgumentException("amount>0");
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) throw new IllegalArgumentException("amount>0");
 
-        if(idempotencyKey!=null){
+        if (idempotencyKey != null) {
             Optional<Transaction> existing = transactionRepository.findByIdempotencyKey(idempotencyKey);
-            if(existing.isPresent()) {
+            if (existing.isPresent()) {
                 log.info("Idempotent topUp detected, returning existing tx {}", existing.get().getId());
                 return existing.get();
             }
@@ -64,23 +64,26 @@ public class CardTransactionService {
 
             log.info("TopUp succeeded: cardId={}, txId={}", cardId, tx.getId());
             return tx;
-        }catch (DataIntegrityViolationException ex){
-            if(idempotencyKey!=null){
+        } catch (DataIntegrityViolationException ex) {
+            if (idempotencyKey != null) {
                 log.warn("DataIntegrityViolationException for idempotencyKey={}, fetching existing transaction", idempotencyKey);
                 return transactionRepository.findByIdempotencyKey(idempotencyKey)
-                        .orElseThrow(()->
+                        .orElseThrow(() ->
                                 new RuntimeException("Idempotent tx not found after constraint violation", ex));
             }
             throw ex;
         }
     }
+
     @Transactional
     public Transaction withdraw(UUID cardId, BigDecimal amount, String idempotencyKey) {
         log.info("Start method withdraw in CardTransactionService");
         if (amount.compareTo(BigDecimal.ZERO) <= 0) throw new IllegalArgumentException("amount>0");
 
         if (idempotencyKey != null) {
-            transactionRepository.findByIdempotencyKey(idempotencyKey).ifPresent(tx -> { throw new IdempotentException(tx); });
+            transactionRepository.findByIdempotencyKey(idempotencyKey).ifPresent(tx -> {
+                throw new IdempotentException(tx);
+            });
         }
 
         Card card = cardRepository.findByIdForUpdate(cardId)

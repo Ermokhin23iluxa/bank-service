@@ -54,7 +54,7 @@ public class CardServiceImpl implements CardService {
 
         cardRepository.save(newCard);
 
-        log.info("Успешное создание карты id: {}",newCard.getId());
+        log.info("Успешное создание карты id: {}", newCard.getId());
 
         return mapper.toDto(newCard);
     }
@@ -92,29 +92,29 @@ public class CardServiceImpl implements CardService {
         }
         card.setStatus(status);
         cardRepository.save(card);
-        log.info("Статус успешно изменен на: {}",status.name());
+        log.info("Статус успешно изменен на: {}", status.name());
         return mapper.toDto(card);
     }
 
     //todo: Продление карты, доработать
-    public CardDto cardRenewal(UUID id){
-        log.debug("Попытка продления карты {}",id);
+    public CardDto cardRenewal(UUID id) {
+        log.debug("Попытка продления карты {}", id);
         Card card = findCardByIdOrThrow(id);
         LocalDate newDate = generationCardService.generationDate(card.getExpireDate());
         card.setExpireDate(newDate);
         cardRepository.save(card);
-        log.info("Успешное продление карты до {}",card.getExpireDate());
+        log.info("Успешное продление карты до {}", card.getExpireDate());
         return mapper.toDto(card);
     }
 
-    private Card findCardByIdOrThrow(UUID id){
-        log.debug("Поиск карты с id: {}",id);
+    private Card findCardByIdOrThrow(UUID id) {
+        log.debug("Поиск карты с id: {}", id);
         return cardRepository.findById(id)
                 .orElseThrow(
-                () -> {
-                    log.warn("Карта с ID {} не найдена", id);
-                    return new CardNotFoundException("Карты с id: {" + id + "} не существует");
-                });
+                        () -> {
+                            log.warn("Карта с ID {} не найдена", id);
+                            return new CardNotFoundException("Карты с id: {" + id + "} не существует");
+                        });
     }
 
 

@@ -12,7 +12,7 @@ public class DbInit {
     public void createIndexesIfNotExist(){
         // индекс для idempotency_key (позволяет null)
         jdbc.execute(
-                "CREATE UNIQUE INDEX IF NOT EXISTS uq_transactions_idempotency "+
+                "CREATE UNIQUE INDEX IF NOT EXISTS uq_transactions_idempotency " +
                         "ON transactions (idempotency_key) WHERE idempotency_key IS NOT NULL;"
         );
         // индекс для pan_hash

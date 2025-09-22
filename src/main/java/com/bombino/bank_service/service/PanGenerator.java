@@ -34,12 +34,16 @@ public class PanGenerator {
         int check = (10 - (sum % 10)) % 10;
         return (char) ('0' + check);
     }
+
     public static boolean luhnValidate(String pan) {
         int sum = 0;
         boolean alternate = false;
         for (int i = pan.length() - 1; i >= 0; i--) {
             int n = pan.charAt(i) - '0';
-            if (alternate) { n *= 2; if (n > 9) n -= 9; }
+            if (alternate) {
+                n *= 2;
+                if (n > 9) n -= 9;
+            }
             sum += n;
             alternate = !alternate;
         }

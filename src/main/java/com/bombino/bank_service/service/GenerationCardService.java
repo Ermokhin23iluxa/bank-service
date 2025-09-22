@@ -16,13 +16,13 @@ public class GenerationCardService {
 
     private final CardRepository cardRepository;
 
-    public String generationCVV(){
+    public String generationCVV() {
         log.debug("Генерация CVV");
         Random random = new Random();
         return Integer.toString(random.nextInt(1000));
     }
 
-    public String generateUniquePan(){
+    public String generateUniquePan() {
         log.info("Генерация уникального pan");
         int attempts = 0;
         while (attempts++ < 100) {
@@ -36,7 +36,8 @@ public class GenerationCardService {
         log.warn("Ошибка генерации PAN");
         throw new RuntimeException("Не удалось сгенерировать уникальный PAN");
     }
-    public LocalDate generationDate(LocalDate date){
+
+    public LocalDate generationDate(LocalDate date) {
         log.info("Генерация даты");
         return date.plusYears(3);
     }

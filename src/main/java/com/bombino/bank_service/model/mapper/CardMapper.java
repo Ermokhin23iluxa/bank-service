@@ -5,4 +5,5 @@ import com.bombino.bank_service.model.entity.Card;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface CardMapper extends Mappable<Card,CardDto>{}
+public interface CardMapper extends Mappable<Card, CardDto> {
+}
