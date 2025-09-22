@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  bank-redis:
+    image: redis:7-alpine
+    container_name: bank-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - bank-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    #docker-compose up -d redis
+    #docker-compose down
+
+  bank-postgres:
+    image: postgres:15
+    container_name: bank-postgres
+    environment:
+      POSTGRES_DB: bank_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5432:5432"
+    volumes:
+      - bank-postgres-data:/var/lib/postgresql/data
+    networks:
+      - bank-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  bank-postgres-data:
+
+networks:
+  bank-network:
+    driver: bridge
