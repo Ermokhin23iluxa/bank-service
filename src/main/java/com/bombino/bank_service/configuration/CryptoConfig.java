@@ -10,7 +10,7 @@ import org.springframework.security.crypto.encrypt.TextEncryptor;
 public class CryptoConfig {
     @Bean
     public TextEncryptor textEncryptor(
-            @Value("${encrypt.info}")
+            @Value("${encrypt.secret-key}")
             String info,
             @Value("${encrypt.salt}")
             String salt

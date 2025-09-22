@@ -8,9 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/BombinoBank/cards")
+@RequestMapping("/api/v1/cards")
 @RequiredArgsConstructor
 public class CardController {
 
@@ -20,19 +21,17 @@ public class CardController {
     public ResponseEntity<CardDto> createCard(){
         return ResponseEntity.status(HttpStatus.CREATED).body(cardService.createCard());
     }
-    @DeleteMapping("/id/del")
-    public ResponseEntity<Void> deleteCard(@PathVariable("id")Long id){
+    @DeleteMapping("/id")
+    public ResponseEntity<Void> deleteCard(@PathVariable("id") UUID id){
         cardService.deleteCard(id);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
     @GetMapping("/id")
-    public ResponseEntity<CardDto> getCardById(@PathVariable("id") Long id){
-
+    public ResponseEntity<CardDto> getCardById(@PathVariable("id") UUID id){
         return ResponseEntity.status(HttpStatus.OK).body(cardService.getCardById(id));
     }
     @GetMapping()
-    public ResponseEntity<List<CardDto>> getCardById(){
-
+    public ResponseEntity<List<CardDto>> getAllCards(){
         return ResponseEntity.status(HttpStatus.OK).body(cardService.getAllCards());
     }
 
