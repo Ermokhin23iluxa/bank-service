@@ -86,27 +86,37 @@ public class CardTransactionService {
             });
         }
 
-        Card card = cardRepository.findByIdForUpdate(cardId)
-                .orElseThrow(() -> new CardNotFoundException(cardId));
-        if (card.getBalance().compareTo(amount) < 0) throw new InsufficientFundsException();
+        try {
+            Card card = cardRepository.findByIdForUpdate(cardId)
+                    .orElseThrow(() -> new CardNotFoundException(cardId));
+            if (card.getBalance().compareTo(amount) < 0) throw new InsufficientFundsException();
 
-        card.setBalance(card.getBalance().subtract(amount));
-        cardRepository.save(card);
+            card.setBalance(card.getBalance().subtract(amount));
+            cardRepository.save(card);
 
-        Transaction tx = new Transaction();
-        tx.setCardId(card.getId());
-        tx.setType(OperationType.DEBIT);
-        tx.setAmount(amount);
-        tx.setIdempotencyKey(idempotencyKey);
-        transactionRepository.save(tx);
+            Transaction tx = new Transaction();
+            tx.setCardId(card.getId());
+            tx.setType(OperationType.DEBIT);
+            tx.setAmount(amount);
+            tx.setIdempotencyKey(idempotencyKey);
+            transactionRepository.save(tx);
 
-        OutboxEvent evt = new OutboxEvent();
-        evt.setAggregateType("CARD");
-        evt.setAggregateId(card.getId());
-        evt.setEventType("CardDebited");
-        evt.setPayload("{\"transactionId\":\"" + tx.getId() + "\",\"amount\":" + amount + "}");
-        outboxEventRepository.save(evt);
-
-        return tx;
+            OutboxEvent evt = new OutboxEvent();
+            evt.setAggregateType("CARD");
+            evt.setAggregateId(card.getId());
+            evt.setEventType("CardDebited");
+            evt.setPayload("{\"transactionId\":\"" + tx.getId() + "\",\"amount\":" + amount + "}");
+            outboxEventRepository.save(evt);
+            log.info("Withdraw succeeded: cardId={}, txId={}", cardId, tx.getId());
+            return tx;
+        }catch (DataIntegrityViolationException ex){
+            if(idempotencyKey!=null){
+                log.warn("DataIntegrityViolationException for idempotencyKey={}, fetching existing transaction", idempotencyKey);
+                return transactionRepository.findByIdempotencyKey(idempotencyKey)
+                        .orElseThrow(() ->
+                                new RuntimeException("Idempotent tx not found after constraint violation", ex));
+            }
+            throw ex;
+        }
     }
 }

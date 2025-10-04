@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DbInit {
     private final JdbcTemplate jdbc;
-
     public void createIndexesIfNotExist(){
         // индекс для idempotency_key (позволяет null)
         jdbc.execute(

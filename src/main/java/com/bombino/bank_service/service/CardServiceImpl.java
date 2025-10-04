@@ -29,19 +29,26 @@ public class CardServiceImpl implements CardService {
     private final EncryptionService encryptionService;
 
     @Override
-    public CardDto createCard() {
+    public CardDto createCard(UUID userId) {
         log.debug("Создание карты");
         String pan = generationCardService.generateUniquePan();
+        log.info("pan:{} ,length:{} ",pan,pan.length());
         String panHash = CryptoUtils.sha256Hex(pan);
+        log.info("panHash:{} ,length:{} ",panHash,panHash.length());
         String cryptedPan = encryptionService.encrypt(pan);
+        log.info("cryptedPan:{} ,length:{} ",cryptedPan,cryptedPan.length());
         String maskedPan = encryptionService.maskPan(pan);
+        log.info("maskedPan:{} ,length:{} ",maskedPan,maskedPan.length());
         LocalDate expirationDate = generationCardService.generationDate(LocalDate.now());
 
         String cvv = generationCardService.generationCVV();
+        log.info("cvv:{} ,length:{} ",cvv,cvv.length());
         String encryptedCVV = encryptionService.encrypt(cvv);
+        log.info("encryptedCVV:{} ,length:{} ",encryptedCVV,encryptedCVV.length());
 
         Card newCard = Card
                 .builder()
+                .userId(userId)
                 .panHash(panHash)
                 .panCiphertext(cryptedPan)
                 .maskedPan(maskedPan)

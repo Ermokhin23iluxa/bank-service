@@ -7,7 +7,7 @@ import java.util.UUID;
 
 
 public interface CardService {
-    CardDto createCard();
+    CardDto createCard(UUID userid);
 
     void deleteCard(UUID id);
 

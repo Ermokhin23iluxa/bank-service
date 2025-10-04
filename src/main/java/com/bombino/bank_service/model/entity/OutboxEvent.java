@@ -23,7 +23,7 @@ public class OutboxEvent {
 
     private String eventType;
 
-    @Column(columnDefinition = "jsonb")
+    @Column(columnDefinition = "TEXT")
     private String payload;
 
     private boolean processed = false;

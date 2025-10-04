@@ -31,10 +31,10 @@ public class Card {
     private BigDecimal balance = BigDecimal.ZERO;
 
     @NotNull
-    @Column(name = "pan_ciphertext", nullable = false, unique = true, length = 16)
+    @Column(name = "pan_ciphertext", nullable = false, unique = true)
     private String panCiphertext;
     @NotNull
-    @Column(name = "pan_hash", nullable = false, unique = true, length = 16)
+    @Column(name = "pan_hash", nullable = false, unique = true)
     private String panHash;
 
     @NotNull
