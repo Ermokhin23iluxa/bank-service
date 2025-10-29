@@ -27,6 +27,9 @@ public class Transaction {
     @Schema(description = "ID карты")
     private UUID cardId;
 
+    @Column(name = "transfer_id", columnDefinition = "uuid")
+    private UUID transferId;
+
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
     @Schema(description = "Тип операции", example = "CREDIT")
@@ -35,6 +38,10 @@ public class Transaction {
     @Column(nullable = false, precision = 18, scale = 2)
     @Schema(description = "Сумма транзакции", example = "100.00")
     private BigDecimal amount;
+
+    @Column(name = "currency", nullable = false, length = 3)
+    @Schema(description = "Валюта (ISO 4217)", example = "RUB")
+    private String currency;
 
     @Column(name = "idempotency_key", unique = true)
     @Schema(description = "Ключ идемпотентности")
@@ -48,6 +55,7 @@ public class Transaction {
     public void prePersist() {
         if (this.id == null) this.id = UUID.randomUUID();
         if (this.createdAt == null) this.createdAt = OffsetDateTime.now();
+        if (this.currency == null) this.currency = "RUB";
 
     }
 }

@@ -1,7 +1,5 @@
 package com.bombino.bank_service.model.mapper;
 
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 
 

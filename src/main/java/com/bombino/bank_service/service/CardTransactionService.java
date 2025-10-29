@@ -10,6 +10,7 @@ import com.bombino.bank_service.model.enums.OperationType;
 import com.bombino.bank_service.repository.CardRepository;
 import com.bombino.bank_service.repository.OutboxEventRepository;
 import com.bombino.bank_service.repository.TransactionRepository;
+import com.bombino.bank_service.transfer.TransferRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -27,6 +28,7 @@ public class CardTransactionService {
     private final CardRepository cardRepository;
     private final TransactionRepository transactionRepository;
     private final OutboxEventRepository outboxEventRepository;
+    private final TransferRepository transferRepository;
 
     @Transactional
     public Transaction topUp(UUID cardId, BigDecimal amount, String idempotencyKey) {
@@ -107,10 +109,10 @@ public class CardTransactionService {
             evt.setEventType("CardDebited");
             evt.setPayload("{\"transactionId\":\"" + tx.getId() + "\",\"amount\":" + amount + "}");
             outboxEventRepository.save(evt);
-            log.info("Withdraw succeeded: cardId={}, txId={}", cardId, tx.getId());
+            log.info("Списание успешно: cardId={}, txId={}", cardId, tx.getId());
             return tx;
-        }catch (DataIntegrityViolationException ex){
-            if(idempotencyKey!=null){
+        } catch (DataIntegrityViolationException ex) {
+            if (idempotencyKey != null) {
                 log.warn("DataIntegrityViolationException for idempotencyKey={}, fetching existing transaction", idempotencyKey);
                 return transactionRepository.findByIdempotencyKey(idempotencyKey)
                         .orElseThrow(() ->
@@ -119,4 +121,5 @@ public class CardTransactionService {
             throw ex;
         }
     }
+
 }

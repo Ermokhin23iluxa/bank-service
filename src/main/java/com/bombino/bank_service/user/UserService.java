@@ -1,5 +1,6 @@
 package com.bombino.bank_service.user;
 
+import com.bombino.bank_service.model.dto.CardDto;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

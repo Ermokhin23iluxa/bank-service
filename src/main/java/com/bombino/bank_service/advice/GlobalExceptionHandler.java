@@ -3,7 +3,6 @@ package com.bombino.bank_service.advice;
 import com.bombino.bank_service.exception.CardNotFoundException;
 import com.bombino.bank_service.exception.IdempotentException;
 import com.bombino.bank_service.exception.InsufficientFundsException;
-import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;

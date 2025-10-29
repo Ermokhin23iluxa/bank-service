@@ -32,19 +32,19 @@ public class CardServiceImpl implements CardService {
     public CardDto createCard(UUID userId) {
         log.debug("Создание карты");
         String pan = generationCardService.generateUniquePan();
-        log.info("pan:{} ,length:{} ",pan,pan.length());
+        log.info("pan:{} ,длина:{} ",pan,pan.length());
         String panHash = CryptoUtils.sha256Hex(pan);
-        log.info("panHash:{} ,length:{} ",panHash,panHash.length());
+        log.info("panHash:{} ,длина:{} ",panHash,panHash.length());
         String cryptedPan = encryptionService.encrypt(pan);
-        log.info("cryptedPan:{} ,length:{} ",cryptedPan,cryptedPan.length());
+        log.info("cryptedPan:{} ,длина:{} ",cryptedPan,cryptedPan.length());
         String maskedPan = encryptionService.maskPan(pan);
-        log.info("maskedPan:{} ,length:{} ",maskedPan,maskedPan.length());
+        log.info("maskedPan:{} ,длина:{} ",maskedPan,maskedPan.length());
         LocalDate expirationDate = generationCardService.generationDate(LocalDate.now());
 
         String cvv = generationCardService.generationCVV();
-        log.info("cvv:{} ,length:{} ",cvv,cvv.length());
+        log.info("cvv:{} ,длина:{} ",cvv,cvv.length());
         String encryptedCVV = encryptionService.encrypt(cvv);
-        log.info("encryptedCVV:{} ,length:{} ",encryptedCVV,encryptedCVV.length());
+        log.info("encryptedCVV:{} ,длина:{} ",encryptedCVV,encryptedCVV.length());
 
         Card newCard = Card
                 .builder()
@@ -67,6 +67,15 @@ public class CardServiceImpl implements CardService {
     }
 
 
+    @Override
+    public List<CardDto> getCardsByUserId(UUID userId){
+        List<Card> cardsByUserId = cardRepository.findByUserId(userId);
+        if(cardsByUserId.isEmpty()){
+            throw new CardNotFoundException("У пользователя пока нет карт!");
+        }
+        return mapper.toDto(cardsByUserId);
+
+    }
     @Override
     public void deleteCard(UUID id) {
         log.debug("Удаление карты с ID: {}", id);
@@ -95,7 +104,7 @@ public class CardServiceImpl implements CardService {
     public CardDto changeStatus(UUID id, CardStatus status) {
         Card card = findCardByIdOrThrow(id);
         if (card.getStatus() == status) {
-            throw new IllegalStateException("This status is already set: {" + status.name() + "}");
+            throw new IllegalStateException("Этот статус уже установлен: {" + status.name() + "}");
         }
         card.setStatus(status);
         cardRepository.save(card);

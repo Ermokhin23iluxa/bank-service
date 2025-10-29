@@ -28,15 +28,9 @@ public class KafkaMessageSender implements MessageSender {
     @Override
     public void send(String topic, String payload) throws Exception {
         send(topic, payload, null, null);
-//        try {
-//            send(topic,payload);
-//            kafkaTemplate.send(topic, payload).get(5, TimeUnit.SECONDS);
-//            log.info("Кафка успешно отправила в топик={} payloadLen={}", topic, payload == null ? 0 : payload.length());
-//        } catch (Exception exception) {
-//            log.error("Ошибка отправки в топик Kafka={}", topic, exception);
-//            throw new RuntimeException("Ошибка отправки сообщения в Kafka", exception);
-//        }
     }
+
+
     @Retryable(
             retryFor = {TimeoutException.class, KafkaException.class, ExecutionException.class},
             maxAttempts = MAX_ATTEMPTS,
@@ -44,6 +38,7 @@ public class KafkaMessageSender implements MessageSender {
     )
     @Override
     public void send(String topic, String payload, UUID eventId, UUID aggregateId) throws Exception {
+        log.info("Попытка отправить сообщение в кафку");
         try{
             String key = aggregateId == null ? null : aggregateId.toString();
             ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, key, payload);

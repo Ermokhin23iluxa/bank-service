@@ -6,6 +6,9 @@ import com.bombino.bank_service.model.dto.TransactionDto;
 import com.bombino.bank_service.model.entity.Transaction;
 import com.bombino.bank_service.model.mapper.TransactionMapper;
 import com.bombino.bank_service.service.CardTransactionService;
+import com.bombino.bank_service.transfer.TransferRequest;
+import com.bombino.bank_service.transfer.TransferResult;
+import com.bombino.bank_service.transfer.TransferService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,6 +25,7 @@ import java.util.UUID;
 public class TransactionController {
 
     private final CardTransactionService cardTransactionService;
+    private final TransferService transferService;
     private final TransactionMapper mapper;
 
     @Operation(
@@ -49,4 +53,16 @@ public class TransactionController {
         Transaction transaction = cardTransactionService.withdraw(id, request.getAmount(), idempotencyKey);
         return ResponseEntity.ok(mapper.toDto(transaction));
     }
+
+    @PostMapping("/{fromId}/transfer")
+    public ResponseEntity<TransferResult> transfer(
+            @PathVariable("fromId") UUID fromCardId,
+            @RequestBody TransferRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey
+    ) {
+        TransferResult transferResult = transferService.transfer(fromCardId,request.getToCardId() ,request.getAmount(), idempotencyKey);
+        return ResponseEntity.ok(transferResult);
+    }
+
+
 }

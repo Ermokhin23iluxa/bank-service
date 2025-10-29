@@ -5,11 +5,18 @@ services:
     image: obsidiandynamics/kafdrop:3.31.0
     container_name: kafdrop
     environment:
-      KAFKA_BROKER_CONNECT: "kafka:29092"  # Используем внутренний порт
-      KAFKA_PROPERTIES: "bootstrap.servers=kafka:29092"  # Добавляем явное указание
+      KAFKA_BROKER_CONNECT: "kafka:29092,kafka2:29092,kafka3:29092"  # Используем внутренний порт
+      KAFKA_PROPERTIES: |
+        bootstrap.servers=kafka:29092,kafka2:29092,kafka3:29092
+        request.timeout.ms=30000
+        session.timeout.ms=30000
+        connection.max.idle.ms=30000
+      #KAFKA_PROPERTIES: "bootstrap.servers=kafka:29092"  # Добавляем явное указание
       #KAFKA_BROKERCONNECT: "kafka:9092"
     depends_on:
       - kafka
+      - kafka2
+      - kafka3
     ports:
       - "9000:9000"
     networks:
@@ -34,14 +41,16 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # порт 9092 для внешних клиентов\ 29092 для внутренней сети докера
+
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:29092
       # для приложений на хосте (IDE) — advertise localhost:9092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
     ports:
       - "9092:9092"
     depends_on:
@@ -49,6 +58,68 @@ services:
     networks:
       - bank-network
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  kafka2:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: bank-kafka2
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9095,PLAINTEXT_INTERNAL://0.0.0.0:29092
+      # для приложений на хосте (IDE) — advertise localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9095,PLAINTEXT_INTERNAL://kafka2:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+    ports:
+      - "9095:9095"
+    depends_on:
+      - zookeeper
+    networks:
+      - bank-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "kafka-topics", "--bootstrap-server", "localhost:9095", "--list" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  kafka3:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: bank-kafka3
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094,PLAINTEXT_INTERNAL://0.0.0.0:29092
+      # для приложений на хосте (IDE) — advertise localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9094,PLAINTEXT_INTERNAL://kafka3:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+    ports:
+      - "9094:9094"
+    depends_on:
+      - zookeeper
+    networks:
+      - bank-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "kafka-topics", "--bootstrap-server", "localhost:9094", "--list" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
 
   bank-redis:
@@ -84,9 +155,35 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
+
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    ports:
+      - "9001:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - bank-network
+    restart: unless-stopped
+
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "9002:8080"
+    networks:
+      - bank-network
+    restart: unless-stopped
 
 volumes:
   bank-postgres-data:
+  portainer_data:
 
 networks:
   bank-network:

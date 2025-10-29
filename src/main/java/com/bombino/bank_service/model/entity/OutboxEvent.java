@@ -28,6 +28,11 @@ public class OutboxEvent {
 
     private boolean processed = false;
 
+    //todo: три поля для блокировки
+    private boolean locked = false;
+    private String lockedBy;
+    private OffsetDateTime lockedAt;
+
     private OffsetDateTime createdAt;
 
     @PrePersist
