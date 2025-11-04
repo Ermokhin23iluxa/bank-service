@@ -67,6 +67,9 @@ public class CardServiceImpl implements CardService {
     }
 
 
+    /**
+     *  Для админа - достать все карты пользователя
+     */
     @Override
     public List<CardDto> getCardsByUserId(UUID userId){
         List<Card> cardsByUserId = cardRepository.findByUserId(userId);
@@ -76,6 +79,7 @@ public class CardServiceImpl implements CardService {
         return mapper.toDto(cardsByUserId);
 
     }
+
     @Override
     public void deleteCard(UUID id) {
         log.debug("Удаление карты с ID: {}", id);
@@ -92,6 +96,9 @@ public class CardServiceImpl implements CardService {
         return mapper.toDto(card);
     }
 
+    /**
+     *  Для админа - достать все карты в системе
+     */
     @Override
     public List<CardDto> getAllCards() {
         log.debug("Извлечение всех карт");

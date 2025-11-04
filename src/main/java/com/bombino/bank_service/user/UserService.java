@@ -23,7 +23,7 @@ public class UserService {
         });
         User user = User.builder()
                 .name(name)
-                .password(password) // 🔥 НЕ ЗАБУДЬТЕ ЗАХЕШИРОВАТЬ ПАРОЛЬ!
+                .password(password)
                 .build();
 
         User savedUser = userRepository.save(user);

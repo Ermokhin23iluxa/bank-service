@@ -50,6 +50,7 @@ public class OutboxPublisherWithLock {
         return switch (eventType.toLowerCase()) {
             case "cardcredited", "carddebited","transfercompleted" -> "transaction-events";
             case "card_created", "card_blocked" -> "card-events";
+            case "deadletter" -> "dead-letter";
             case "account_created", "balance_updated" -> "account-events";
             default -> "general-events";
         };

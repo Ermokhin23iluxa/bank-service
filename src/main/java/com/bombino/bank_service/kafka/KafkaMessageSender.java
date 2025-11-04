@@ -1,5 +1,7 @@
 package com.bombino.bank_service.kafka;
 
+import com.bombino.bank_service.deadLetter.DeadLetter;
+import com.bombino.bank_service.deadLetter.DeadLetterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -21,6 +23,7 @@ import java.util.concurrent.TimeoutException;
 @Slf4j
 public class KafkaMessageSender implements MessageSender {
 
+    private final DeadLetterService deadLetterService;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private static final int MAX_ATTEMPTS = 5;
 
@@ -61,6 +64,12 @@ public class KafkaMessageSender implements MessageSender {
     @Recover
     public void sendFallback(Exception ex, String topic, String payload, UUID eventId, UUID aggregateId) {
         log.error("Все {} попытки отправить eventId {} в топик {} провалились. Ошибка: {}", MAX_ATTEMPTS,eventId, topic,ex.getMessage(), ex);
-        //todo: Сохранить в dead-letter: таблицу или лог для ручной обработки
+        String errorMessage = ex.getMessage();
+        try {
+            DeadLetter dl = deadLetterService.save(eventId, topic, payload, errorMessage);
+            log.info("Saved dead-letter id={} topic={} eventId={}", dl.getId(), topic, eventId);
+        } catch (Exception saveEx) {
+            log.error("Не удалось сохранить dead-letter для eventId={} topic={}, error={}", eventId, topic, saveEx.getMessage(), saveEx);
+        }
     }
 }

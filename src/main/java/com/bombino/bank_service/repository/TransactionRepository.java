@@ -11,4 +11,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     Optional<Transaction> findByIdempotencyKey(String idempotencyKey);
 
     List<Transaction> findByTransferId(UUID id);
+
+    List<Transaction> findTransactionsByCardIdIn(List<UUID> cardIds);
+
+    List<Transaction> findTransactionsByCardId(UUID cardIds);
 }
